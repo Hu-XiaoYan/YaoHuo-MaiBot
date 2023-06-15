@@ -1,7 +1,7 @@
 from nonebot import on_command
-from nonebot.adapters import Event,Bot
+from nonebot.adapters import Event
 from nonebot.adapters.onebot.v11 import MessageSegment
-import os,urllib.request,json
+import os,urllib.request,json,sqlite3
 from PIL import Image,ImageDraw,ImageFont
 
 FilePath=f"file:///{os.getcwd()}/yaohuo_bot/src"
@@ -206,7 +206,7 @@ async def SearchSong_fanc(event:Event):
 
 TrackPreview=on_command("曲目预览",aliases={"preview"},priority=10)
 @TrackPreview.handle()
-async def TrackPreview_fanc(event:Event,bot:Bot):
+async def TrackPreview_fanc(event:Event):
     usr_id=event.get_user_id()
     usr_msg=event.get_plaintext().split(" ")
     sid=usr_msg[1]
@@ -225,18 +225,71 @@ async def TrackPreview_fanc(event:Event,bot:Bot):
     #过滤一下不是曲目ID的东西(
     except IndexError:
         await TrackPreview.finish("命令格式 曲目预览/preview 乐曲ID")
-#此段代码若不使用可直接删除，无影响
+#乐曲预览
 
 Area_Introduce=on_command("区域介绍",aliases={"areai"},priority=10)
 @Area_Introduce.handle()
-async def Area_Introduce_fanc(event:Event,bot:Bot):
-    await Area_Introduce.finish("你先别急,还在翻译中...")
+async def Area_Introduce_fanc(event:Event):
+    usr_msg=event.get_plaintext().split(" ")
+    usr_id=event.get_user_id()
+    geted_list=[]
+    try:
+        a_name=usr_msg[1]
+        conn=sqlite3.connect(f"{FilePath_nohead}/A_Introduce/A_DataBase.db")
+        cur=conn.cursor()
+        cur.execute("SELECT NAME FROM A_Info")
+        name_list_cur=cur.fetchall()
+        for _count in range(len(name_list_cur)): 
+            name_getting=name_list_cur[_count]
+            name=name_getting[0]
+            geted_list.append(name)
+            _count+=1
+        for element in geted_list:
+            if a_name==element:
+                cur.execute(f"SELECT PATH FROM A_Info WHERE NAME='{a_name}'")
+                path_cur=cur.fetchall()
+                path_getting=path_cur[0]
+                path=path_getting[0]
+                await Character_Introduce.finish(MessageSegment.image(f"{FilePath}{path}"))
+            else:
+                await Character_Introduce.finish(MessageSegment.at(usr_id)+f"\n你要找的区域好像还没有被添加哦~\n当前可查的区域列表:{geted_list}\n"+MessageSegment.image(f"{FilePath}/FaceImage/owo.jpg"))
+    except IndexError:
+        await Character_Introduce.finish(f"命令格式 区域介绍/areai 区域名")
+
+Character_Introduce=on_command("角色介绍",aliases={"chari"},priority=10)
+@Character_Introduce.handle()
+async def Character_Introduce_fanc(event:Event):
+    usr_msg=event.get_plaintext().split(" ")
+    usr_id=event.get_user_id()
+    geted_list=[]
+    try:
+        c_name=usr_msg[1]
+        conn=sqlite3.connect(f"{FilePath_nohead}/C_Introduce/C_DataBase.db")
+        cur=conn.cursor()
+        cur.execute("SELECT NAME FROM C_Info")
+        name_list_cur=cur.fetchall()
+        for _count in range(len(name_list_cur)): 
+            name_getting=name_list_cur[_count]
+            name=name_getting[0]
+            geted_list.append(name)
+            _count+=1
+        for element in geted_list:
+            if c_name==element:
+                cur.execute(f"SELECT PATH FROM C_Info WHERE NAME='{c_name}'")
+                path_cur=cur.fetchall()
+                path_getting=path_cur[0]
+                path=path_getting[0]
+                await Character_Introduce.finish(MessageSegment.image(f"{FilePath}{path}"))
+            else:
+                await Character_Introduce.finish(MessageSegment.at(usr_id)+f"\n你要找的角色好像还没有被添加哦~\n当前可查的角色列表:{geted_list}\n"+MessageSegment.image(f"{FilePath}/FaceImage/owo.jpg"))
+    except IndexError:
+        await Character_Introduce.finish(f"命令格式 角色介绍/chari 角色名")
 
 Help=on_command("帮助",aliases={"help"},priority=10)
 @Help.handle()
-async def Help_fanc(event:Event,bot:Bot):
+async def Help_fanc():
     await Help.finish(
-"""尧火Bot菜单 V0.42 Alpha
+"""尧火Bot菜单 V0.5 Alpha
 1.段位认定/dan 1/2
   查看段位认定表 1表 2里
   当前段位版本:UniversePlus
@@ -245,6 +298,6 @@ async def Help_fanc(event:Event,bot:Bot):
 3.曲目预览/preview 歌曲ID 播放歌曲预览
 4.区域介绍/areai 区域名 查看区域介绍
   个人汉化,渣翻勿介
-5.角色介绍/crai 角色名
+5.角色介绍/chari 角色名
   同上""")
 #输出帮助信息(文字版)
