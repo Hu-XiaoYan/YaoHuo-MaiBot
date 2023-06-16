@@ -244,14 +244,16 @@ async def Area_Introduce_fanc(event:Event):
             name=name_getting[0]
             geted_list.append(name)
             _count+=1
+        x=0
         for element in geted_list:
+            x+=1
             if a_name==element:
                 cur.execute(f"SELECT PATH FROM A_Info WHERE NAME='{a_name}'")
                 path_cur=cur.fetchall()
                 path_getting=path_cur[0]
                 path=path_getting[0]
                 await Character_Introduce.finish(MessageSegment.image(f"{FilePath}{path}"))
-            else:
+            elif x==len(geted_list):
                 await Character_Introduce.finish(MessageSegment.at(usr_id)+f"\n你要找的区域好像还没有被添加哦~\n当前可查的区域列表:{geted_list}\n"+MessageSegment.image(f"{FilePath}/FaceImage/owo.jpg"))
     except IndexError:
         await Character_Introduce.finish(f"命令格式 区域介绍/areai 区域名")
@@ -273,14 +275,16 @@ async def Character_Introduce_fanc(event:Event):
             name=name_getting[0]
             geted_list.append(name)
             _count+=1
+        x=0
         for element in geted_list:
+            x+=1
             if c_name==element:
                 cur.execute(f"SELECT PATH FROM C_Info WHERE NAME='{c_name}'")
                 path_cur=cur.fetchall()
                 path_getting=path_cur[0]
                 path=path_getting[0]
                 await Character_Introduce.finish(MessageSegment.image(f"{FilePath}{path}"))
-            else:
+            elif x==len(geted_list):
                 await Character_Introduce.finish(MessageSegment.at(usr_id)+f"\n你要找的角色好像还没有被添加哦~\n当前可查的角色列表:{geted_list}\n"+MessageSegment.image(f"{FilePath}/FaceImage/owo.jpg"))
     except IndexError:
         await Character_Introduce.finish(f"命令格式 角色介绍/chari 角色名")
